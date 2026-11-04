@@ -1,0 +1,73 @@
+name: Display-Firmware
+
+on:
+  push:
+    branches: [display]
+    paths: ["display/**", ".github/workflows/display.yml"]
+  pull_request:
+    paths: ["display/**", ".github/workflows/display.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: display
+    steps:
+      # Versionsnummer = Laufnummer + 100: Das öffentliche Repo hat am 04.11.2026 neu bei 1 angefangen,
+      # die Apps auf den Handys haben schon 55 bis 78 (Android lehnt kleinere Versionen ab).
+      - name: Versionsnummer
+        run: echo "NUMMER=$((GITHUB_RUN_NUMBER + 100))" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: pio-${{ hashFiles('display/platformio.ini') }}
+      - name: PlatformIO installieren
+        run: pip install platformio==6.1.18
+      - name: Bauen (alle Varianten)
+        env:
+          # Build-Nummer = N aus dem Release display-N, steht im hallo und unter "Mehr"
+          PLATFORMIO_BUILD_FLAGS: -DFW_BUILD=${{ env.NUMMER }}
+        run: pio run -e cyd -e cyd_invertiert -e cyd2usb
+      - name: Ein Flash-Abbild pro Variante (ab Adresse 0x0)
+        run: |
+          mkdir -p ../out
+          BOOT_APP0=$(find ~/.platformio/packages/framework-arduinoespressif32 -name boot_app0.bin | head -1)
+          ESPTOOL=~/.platformio/packages/tool-esptoolpy/esptool.py
+          for v in cyd cyd_invertiert cyd2usb; do
+            B=.pio/build/$v
+            python "$ESPTOOL" --chip esp32 merge_bin -o ../out/fahrtenbuch-display-$v.bin \
+              --flash_mode dio --flash_freq 40m --flash_size 4MB \
+              0x1000 $B/bootloader.bin 0x8000 $B/partitions.bin 0xe000 "$BOOT_APP0" 0x10000 $B/firmware.bin
+            # Nur die App, für das Update vom Pi über die UART (tools/display_update.py)
+            cp $B/firmware.bin ../out/fahrtenbuch-display-$v-app.bin
+          done
+          cp tools/display_update.py ../out/
+          ls -la ../out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Display-Firmware
+          path: |
+            out/*.bin
+            out/display_update.py
+      - name: Release auf GitHub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/display'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: display-${{ env.NUMMER }}
+          name: Display ${{ env.NUMMER }}
+          body: |
+            Firmware für das ESP32-2432S028R. Welche Datei: siehe display/README.md.
+            Update vom Pi (ohne Knöpfe): `sudo python3 display_update.py fahrtenbuch-display-cyd-app.bin`
+            Erstinstallation per esptool: `esptool --chip esp32 --port /dev/ttyUSB0 write_flash 0x0 fahrtenbuch-display-cyd.bin`
+          files: |
+            out/*.bin
+            out/display_update.py
