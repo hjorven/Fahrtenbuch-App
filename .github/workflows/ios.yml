@@ -112,7 +112,6 @@ jobs:
       # Deshalb landet die neueste IPA plus ios.json im Branch "downloads". Der Pi holt
       # ihn alle 10 Minuten ab und baut daraus die SideStore-Quelle (server/downloads/).
       - name: Beschreibung für SideStore (ios.json)
-        env:
         run: |
           set -euo pipefail
           IPA="$PWD/Fahrtenbuch-$NUMMER.ipa"
