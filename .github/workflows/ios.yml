@@ -1,0 +1,180 @@
+name: iOS
+
+on:
+  push:
+    branches: [ios]
+    paths: ["ios/**", ".github/workflows/ios.yml"]
+  pull_request:
+    paths: ["ios/**", ".github/workflows/ios.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      # Versionsnummer = Laufnummer + 100: Das öffentliche Repo hat am 04.11.2026 neu bei 1 angefangen,
+      # die Apps auf den Handys haben schon 55 bis 78 (Android lehnt kleinere Versionen ab).
+      - name: Versionsnummer
+        run: echo "NUMMER=$((GITHUB_RUN_NUMBER + 100))" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Werkzeuge
+        run: brew install xcodegen ldid
+
+      - name: Projekt erzeugen
+        run: xcodegen generate
+
+      - name: Logiktests (Simulator)
+        run: |
+          # Erstes verfügbares iPhone mit der neuesten iOS-Version.
+          GERAET=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          d = json.load(sys.stdin)["devices"]
+          laufzeiten = sorted((k for k in d if "iOS" in k), key=lambda k: [int(x) if x.isdigit() else 0 for x in k.split("iOS-")[-1].split("-")], reverse=True)
+          for k in laufzeiten:
+              for g in d[k]:
+                  if g["name"].startswith("iPhone"):
+                      print(g["udid"]); sys.exit(0)
+          sys.exit(1)
+          ')
+          echo "Simulator: $GERAET"
+          if ! xcodebuild -project Fahrtenbuch.xcodeproj -scheme Fahrtenbuch \
+            -destination "id=$GERAET" -derivedDataPath build-test -resultBundlePath ergebnis.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            test > test.log 2>&1; then
+            echo "Tests fehlgeschlagen:"
+            grep -E "error:|failed|XCTAssert" test.log | sort -u | head -80
+            sed -n '/ELEMENTBAUM-ANFANG/,/ELEMENTBAUM-ENDE/p' test.log | head -150
+            tail -40 test.log
+            exit 1
+          fi
+          grep -E "Executed|Test Suite .* (passed|failed)" test.log | tail -5
+
+      - name: Screenshots der Oberflächentests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Oberflaeche-iOS
+          path: ios/ergebnis.xcresult
+          if-no-files-found: ignore
+
+      - name: Bauen (ohne Signatur)
+        run: |
+          xcodebuild -version
+          if ! xcodebuild -project Fahrtenbuch.xcodeproj -scheme Fahrtenbuch \
+            -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CURRENT_PROJECT_VERSION=${{ env.NUMMER }} \
+            MARKETING_VERSION=1.0.${{ env.NUMMER }} \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build > xcodebuild.log 2>&1; then
+            echo "Build fehlgeschlagen:"
+            grep -E "error:" xcodebuild.log | sort -u | head -80
+            tail -30 xcodebuild.log
+            exit 1
+          fi
+          tail -5 xcodebuild.log
+
+      - name: Entitlements eintragen und IPA packen
+        run: |
+          APP=build/Build/Products/Release-iphoneos/Fahrtenbuch.app
+          # SideStore übernimmt beim Signieren die eingetragenen Entitlements (App Group).
+          ldid -SFahrtenbuchWidgets/FahrtenbuchWidgets.entitlements "$APP/PlugIns/FahrtenbuchWidgets.appex/FahrtenbuchWidgets"
+          ldid -SFahrtenbuch/Fahrtenbuch.entitlements "$APP/Fahrtenbuch"
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry "Fahrtenbuch-${{ env.NUMMER }}.ipa" Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Fahrtenbuch-IPA
+          path: ios/Fahrtenbuch-${{ env.NUMMER }}.ipa
+
+      - name: Release auf GitHub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/ios'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ios-${{ env.NUMMER }}
+          name: iOS ${{ env.NUMMER }}
+          files: ios/Fahrtenbuch-${{ env.NUMMER }}.ipa
+
+      # Das Repo ist privat: SideStore kommt ohne Anmeldung nicht an GitHub-Releases.
+      # Deshalb landet die neueste IPA plus ios.json im Branch "downloads". Der Pi holt
+      # ihn alle 10 Minuten ab und baut daraus die SideStore-Quelle (server/downloads/).
+      - name: Beschreibung für SideStore (ios.json)
+        env:
+        run: |
+          set -euo pipefail
+          IPA="$PWD/Fahrtenbuch-$NUMMER.ipa"
+          # Version, Build und Rechte aus der fertigen App lesen, damit die Quelle sicher passt.
+          python3 - "$IPA" "$NUMMER" > "$RUNNER_TEMP/ios.json" <<'PY'
+          import datetime, json, os, plistlib, sys
+          ipa, nummer = sys.argv[1], sys.argv[2]
+          app = "Payload/Fahrtenbuch.app"
+          info = plistlib.load(open(f"{app}/Info.plist", "rb"))
+          rechte = set()
+          for e in ("Fahrtenbuch/Fahrtenbuch.entitlements", "FahrtenbuchWidgets/FahrtenbuchWidgets.entitlements"):
+              rechte |= set(plistlib.load(open(e, "rb")).keys())
+          privacy = {k: v for k, v in info.items() if k.startswith("NS") and k.endswith("UsageDescription")}
+          if info["CFBundleVersion"] != nummer:
+              sys.exit(f"CFBundleVersion {info['CFBundleVersion']} passt nicht zu {nummer}")
+          print(json.dumps({
+              "version": info["CFBundleShortVersionString"],
+              "buildVersion": info["CFBundleVersion"],
+              "bundleIdentifier": info["CFBundleIdentifier"],
+              "minOSVersion": info.get("MinimumOSVersion", "26.0"),
+              "datei": os.path.basename(ipa),
+              "groesse": os.path.getsize(ipa),
+              "datum": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "entitlements": sorted(rechte),
+              "privacy": privacy,
+          }, indent=2, ensure_ascii=False))
+          PY
+          cat "$RUNNER_TEMP/ios.json"
+
+      - name: Für den Pi bereitstellen (Branch downloads)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/ios'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          IPA="$PWD/Fahrtenbuch-$NUMMER.ipa"
+          ICON="$PWD/Fahrtenbuch/Assets.xcassets/AppIcon.appiconset/icon.png"
+          URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          for versuch in 1 2 3 4 5; do
+            D="$RUNNER_TEMP/downloads-$versuch"
+            rm -rf "$D" && mkdir -p "$D" && cd "$D"
+            git init -q
+            git config user.name "github-actions[bot]"
+            git config user.email "41898099+github-actions[bot]@users.noreply.github.com"
+            ALT=""
+            if git fetch -q --depth 1 "$URL" downloads; then
+              ALT=$(git rev-parse FETCH_HEAD)
+              git checkout -q FETCH_HEAD -- .
+            fi
+            rm -f Fahrtenbuch-*.ipa
+            cp "$IPA" .
+            cp "$ICON" icon.png
+            cp "$RUNNER_TEMP/ios.json" ios.json
+            git add -A
+            # Immer nur ein Commit ohne Verlauf, damit alte IPAs nicht ewig mitwachsen.
+            git commit -q -m "iOS $NUMMER"
+            if [ -n "$ALT" ]; then
+              git push -q --force-with-lease="downloads:$ALT" "$URL" HEAD:downloads && exit 0
+            else
+              git push -q "$URL" HEAD:downloads && exit 0
+            fi
+            echo "Push fehlgeschlagen (gleichzeitiger Android-Build?), neuer Versuch $versuch"
+            sleep $((versuch * 5))
+          done
+          exit 1

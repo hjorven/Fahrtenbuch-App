@@ -1,0 +1,115 @@
+name: Fahrtenbuch
+options:
+  bundleIdPrefix: de.hjorven
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    TARGETED_DEVICE_FAMILY: "1"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+targets:
+  Fahrtenbuch:
+    type: application
+    platform: iOS
+    sources:
+      - Fahrtenbuch
+      - Shared
+    entitlements:
+      path: Fahrtenbuch/Fahrtenbuch.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.de.hjorven.fahrtenbuch
+    info:
+      path: Fahrtenbuch/Info.plist
+      properties:
+        CFBundleDisplayName: Fahrtenbuch
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIBackgroundModes:
+          - location
+        NSSupportsLiveActivities: true
+        NSLocationWhenInUseUsageDescription: Das Fahrtenbuch zeichnet während einer Fahrt Strecke und Geschwindigkeit auf.
+        NSLocationAlwaysAndWhenInUseUsageDescription: Mit "Immer" kann eine Fahrt auch über das Widget, das Kontrollzentrum oder einen Kurzbefehl gestartet werden.
+        NSCameraUsageDescription: Mit der Kamera fotografierst du Tankbelege und den Tacho. Die Zahlen werden direkt auf dem iPhone gelesen.
+        NSPhotoLibraryUsageDescription: Ein Foto vom Tankbeleg oder Tacho kann auch aus der Fotomediathek kommen.
+        NSMotionUsageDescription: Die Bewegungserkennung merkt, wenn du im Stau stehst, damit die Fahrt dann nicht automatisch endet.
+        NSLocalNetworkUsageDescription: Damit das Fahrtenbuch den Server (Raspberry Pi) im WLAN von selbst findet.
+        NSBonjourServices:
+          - _fahrtenbuch._tcp
+        NSLocalNetworkUsageDescription: Das Fahrtenbuch gleicht die Daten mit eurem Server im Heimnetz ab.
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+          NSAllowsLocalNetworking: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.hjorven.fahrtenbuch
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    dependencies:
+      - target: FahrtenbuchWidgets
+  FahrtenbuchWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - FahrtenbuchWidgets
+      - Shared
+    entitlements:
+      path: FahrtenbuchWidgets/FahrtenbuchWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.de.hjorven.fahrtenbuch
+    info:
+      path: FahrtenbuchWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Fahrtenbuch
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.hjorven.fahrtenbuch.Widgets
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) WIDGET
+  FahrtenbuchTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - FahrtenbuchTests
+    dependencies:
+      - target: Fahrtenbuch
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.hjorven.fahrtenbuch.Tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Fahrtenbuch.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Fahrtenbuch
+        BUNDLE_LOADER: $(TEST_HOST)
+  # Oberflächentests (Roadmap Nr. 20): Screenshots landen im Testergebnis (CI-Artefakt)
+  FahrtenbuchUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - FahrtenbuchUITests
+    dependencies:
+      - target: Fahrtenbuch
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.hjorven.fahrtenbuch.UITests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Fahrtenbuch
+schemes:
+  Fahrtenbuch:
+    build:
+      targets:
+        Fahrtenbuch: all
+    test:
+      targets:
+        - FahrtenbuchTests
+        - FahrtenbuchUITests
