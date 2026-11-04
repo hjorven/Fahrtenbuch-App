@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App-Icon "A nach B": Strecke vom Start (Ring) zum Ziel (Punkt). Erzeugt aus dem 1024er iOS-Raster, eingepasst in den 66-dp-Sicherheitskreis. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:pathData="M36.561,65.487 C36.561,53.792 71.854,56.976 71.854,36.146"
+        android:strokeColor="#FF15171C" android:strokeWidth="4.429" android:strokeLineCap="round" />
+    <path android:pathData="M30.610,71.439 a5.951,5.951 0 1,0 11.902,0 a5.951,5.951 0 1,0 -11.902,0 Z"
+        android:strokeColor="#FF15171C" android:strokeWidth="4.429" />
+    <path android:pathData="M64.103,36.146 a7.751,7.751 0 1,0 15.502,0 a7.751,7.751 0 1,0 -15.502,0 Z"
+        android:fillColor="#FFFF3B30" />
+</vector>

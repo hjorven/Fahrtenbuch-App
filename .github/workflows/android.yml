@@ -1,0 +1,154 @@
+name: Android
+
+on:
+  push:
+    branches: [android]
+    paths: ["android/**", ".github/workflows/android.yml"]
+  pull_request:
+    paths: ["android/**", ".github/workflows/android.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      # Versionsnummer = Laufnummer + 100: Das öffentliche Repo hat am 04.11.2026 neu bei 1 angefangen,
+      # die Apps auf den Handys haben schon 55 bis 78 (Android lehnt kleinere Versionen ab).
+      - name: Versionsnummer
+        run: echo "NUMMER=$((GITHUB_RUN_NUMBER + 100))" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Tests
+        run: ./gradlew --no-daemon testDebugUnitTest
+
+      - name: Signierschlüssel aus Secret holen
+        env:
+          KEYSTORE_BASE64: ${{ secrets.FB_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/fahrtenbuch.jks"
+            echo "FB_KEYSTORE=$RUNNER_TEMP/fahrtenbuch.jks" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Secret FB_KEYSTORE_BASE64 fehlt, APK wird mit Debug-Schlüssel signiert (Updates über alte Version gehen dann nicht)."
+          fi
+
+      - name: APK bauen
+        env:
+          FB_KEYSTORE_PASSWORD: ${{ secrets.FB_KEYSTORE_PASSWORD }}
+          FB_KEY_ALIAS: ${{ secrets.FB_KEY_ALIAS }}
+          FB_KEY_PASSWORD: ${{ secrets.FB_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: APK umbenennen
+        run: cp app/build/outputs/apk/release/app-release.apk Fahrtenbuch-${{ env.NUMMER }}.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Fahrtenbuch-APK
+          path: android/Fahrtenbuch-${{ env.NUMMER }}.apk
+
+      - name: Release auf GitHub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/android'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-${{ env.NUMMER }}
+          name: Android ${{ env.NUMMER }}
+          files: android/Fahrtenbuch-${{ env.NUMMER }}.apk
+          prerelease: false
+
+      # Das Repo ist privat: Handys kommen ohne Anmeldung nicht an GitHub-Releases.
+      # Deshalb landet die neueste APK zusätzlich im Branch "downloads", den der Pi
+      # alle 10 Minuten abholt und auf Port 8091 anbietet (server/downloads/).
+      - name: Für den Pi bereitstellen (Branch downloads)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/android'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          APK="$PWD/Fahrtenbuch-$NUMMER.apk"
+          SHA=$(sha256sum "$APK" | cut -d' ' -f1)
+          GROESSE=$(stat -c %s "$APK")
+          URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          for versuch in 1 2 3 4 5; do
+            D="$RUNNER_TEMP/downloads-$versuch"
+            rm -rf "$D" && mkdir -p "$D" && cd "$D"
+            git init -q
+            git config user.name "github-actions[bot]"
+            git config user.email "41898099+github-actions[bot]@users.noreply.github.com"
+            ALT=""
+            if git fetch -q --depth 1 "$URL" downloads; then
+              ALT=$(git rev-parse FETCH_HEAD)
+              git checkout -q FETCH_HEAD -- .
+            fi
+            rm -f Fahrtenbuch-*.apk
+            cp "$APK" .
+            printf '{"versionCode": %s, "versionName": "1.0.%s", "datei": "Fahrtenbuch-%s.apk", "groesse": %s, "sha256": "%s"}\n' \
+              "$NUMMER" "$NUMMER" "$NUMMER" "$GROESSE" "$SHA" > android.json
+            python3 -m json.tool android.json > /dev/null
+            git add -A
+            # Immer nur ein Commit ohne Verlauf, damit alte APKs nicht ewig mitwachsen.
+            git commit -q -m "Android $NUMMER"
+            if [ -n "$ALT" ]; then
+              git push -q --force-with-lease="downloads:$ALT" "$URL" HEAD:downloads && exit 0
+            else
+              git push -q "$URL" HEAD:downloads && exit 0
+            fi
+            echo "Push fehlgeschlagen (gleichzeitiger iOS-Build?), neuer Versuch $versuch"
+            sleep $((versuch * 5))
+          done
+          exit 1
+
+  # Oberflächentests im Emulator (Roadmap Nr. 20). Eigener Job, blockiert das Release nicht.
+  oberflaeche:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      # Versionsnummer = Laufnummer + 100: Das öffentliche Repo hat am 04.11.2026 neu bei 1 angefangen,
+      # die Apps auf den Handys haben schon 55 bis 78 (Android lehnt kleinere Versionen ab).
+      - name: Versionsnummer
+        run: echo "NUMMER=$((GITHUB_RUN_NUMBER + 100))" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: KVM für den Emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Oberflächentests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          working-directory: android
+          disable-animations: true
+          script: |
+            ./gradlew --no-daemon connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true
+            mkdir -p bilder && adb pull /sdcard/Android/data/de.hjorven.fahrtenbuch/files/screenshots bilder/ || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Oberflaeche-Bilder
+          path: |
+            android/bilder
+            android/app/build/reports/androidTests
+
+permissions:
+  contents: write

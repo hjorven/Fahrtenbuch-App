@@ -1,0 +1,483 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 5,
+    "identityHash": "91ff5c9084229a267e37661416085875",
+    "entities": [
+      {
+        "tableName": "fahrzeug",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `kennzeichen` TEXT NOT NULL, `kraftstoff` TEXT NOT NULL, `kmStand` REAL NOT NULL, `preisProKm` REAL NOT NULL, `farbe` TEXT NOT NULL, `aktiv` INTEGER NOT NULL, `dirty` INTEGER NOT NULL, `aufServer` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kennzeichen",
+            "columnName": "kennzeichen",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kraftstoff",
+            "columnName": "kraftstoff",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kmStand",
+            "columnName": "kmStand",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "preisProKm",
+            "columnName": "preisProKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "farbe",
+            "columnName": "farbe",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aktiv",
+            "columnName": "aktiv",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dirty",
+            "columnName": "dirty",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aufServer",
+            "columnName": "aufServer",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "benutzer",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "fahrt",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fahrzeugId` TEXT NOT NULL, `fahrerId` TEXT NOT NULL, `start` INTEGER NOT NULL, `ende` INTEGER, `kmStart` REAL NOT NULL, `kmEnde` REAL NOT NULL, `streckeKm` REAL NOT NULL, `maxKmh` REAL NOT NULL, `schnittKmh` REAL NOT NULL, `zweck` TEXT NOT NULL, `startOrt` TEXT NOT NULL, `zielOrt` TEXT NOT NULL, `route` TEXT NOT NULL, `notiz` TEXT NOT NULL, `geloescht` INTEGER NOT NULL, `test` INTEGER NOT NULL, `diagnose` TEXT NOT NULL, `dirty` INTEGER NOT NULL, `aufServer` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fahrzeugId",
+            "columnName": "fahrzeugId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fahrerId",
+            "columnName": "fahrerId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "start",
+            "columnName": "start",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ende",
+            "columnName": "ende",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "kmStart",
+            "columnName": "kmStart",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kmEnde",
+            "columnName": "kmEnde",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "streckeKm",
+            "columnName": "streckeKm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxKmh",
+            "columnName": "maxKmh",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "schnittKmh",
+            "columnName": "schnittKmh",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zweck",
+            "columnName": "zweck",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startOrt",
+            "columnName": "startOrt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zielOrt",
+            "columnName": "zielOrt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "route",
+            "columnName": "route",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notiz",
+            "columnName": "notiz",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "geloescht",
+            "columnName": "geloescht",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "test",
+            "columnName": "test",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "diagnose",
+            "columnName": "diagnose",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dirty",
+            "columnName": "dirty",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aufServer",
+            "columnName": "aufServer",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_fahrt_fahrzeugId",
+            "unique": false,
+            "columnNames": [
+              "fahrzeugId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_fahrt_fahrzeugId` ON `${TABLE_NAME}` (`fahrzeugId`)"
+          },
+          {
+            "name": "index_fahrt_start",
+            "unique": false,
+            "columnNames": [
+              "start"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_fahrt_start` ON `${TABLE_NAME}` (`start`)"
+          }
+        ]
+      },
+      {
+        "tableName": "tankvorgang",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fahrzeugId` TEXT NOT NULL, `fahrerId` TEXT NOT NULL, `datum` INTEGER NOT NULL, `kmStand` REAL NOT NULL, `liter` REAL NOT NULL, `preisProLiter` REAL NOT NULL, `gesamtpreis` REAL NOT NULL, `vollgetankt` INTEGER NOT NULL, `tankstelle` TEXT NOT NULL, `ladeort` TEXT NOT NULL, `notiz` TEXT NOT NULL, `geloescht` INTEGER NOT NULL, `test` INTEGER NOT NULL, `beleg` TEXT NOT NULL, `belegOffen` INTEGER NOT NULL, `dirty` INTEGER NOT NULL, `aufServer` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fahrzeugId",
+            "columnName": "fahrzeugId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fahrerId",
+            "columnName": "fahrerId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "datum",
+            "columnName": "datum",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kmStand",
+            "columnName": "kmStand",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "liter",
+            "columnName": "liter",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "preisProLiter",
+            "columnName": "preisProLiter",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gesamtpreis",
+            "columnName": "gesamtpreis",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vollgetankt",
+            "columnName": "vollgetankt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tankstelle",
+            "columnName": "tankstelle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ladeort",
+            "columnName": "ladeort",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notiz",
+            "columnName": "notiz",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "geloescht",
+            "columnName": "geloescht",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "test",
+            "columnName": "test",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "beleg",
+            "columnName": "beleg",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "belegOffen",
+            "columnName": "belegOffen",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dirty",
+            "columnName": "dirty",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aufServer",
+            "columnName": "aufServer",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_tankvorgang_fahrzeugId",
+            "unique": false,
+            "columnNames": [
+              "fahrzeugId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_tankvorgang_fahrzeugId` ON `${TABLE_NAME}` (`fahrzeugId`)"
+          },
+          {
+            "name": "index_tankvorgang_datum",
+            "unique": false,
+            "columnNames": [
+              "datum"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_tankvorgang_datum` ON `${TABLE_NAME}` (`datum`)"
+          }
+        ]
+      },
+      {
+        "tableName": "ausgleich",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `von` TEXT NOT NULL, `an` TEXT NOT NULL, `betrag` REAL NOT NULL, `zeitraum` TEXT NOT NULL, `datum` INTEGER NOT NULL, `notiz` TEXT NOT NULL, `geloescht` INTEGER NOT NULL, `dirty` INTEGER NOT NULL, `aufServer` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "von",
+            "columnName": "von",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "an",
+            "columnName": "an",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "betrag",
+            "columnName": "betrag",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zeitraum",
+            "columnName": "zeitraum",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "datum",
+            "columnName": "datum",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notiz",
+            "columnName": "notiz",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "geloescht",
+            "columnName": "geloescht",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dirty",
+            "columnName": "dirty",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aufServer",
+            "columnName": "aufServer",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_ausgleich_zeitraum",
+            "unique": false,
+            "columnNames": [
+              "zeitraum"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ausgleich_zeitraum` ON `${TABLE_NAME}` (`zeitraum`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '91ff5c9084229a267e37661416085875')"
+    ]
+  }
+}

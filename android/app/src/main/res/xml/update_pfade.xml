@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Update-Ordner für den Installer, Scan-Ordner für die Kamera-App (Beleg- und Tacho-Fotos). -->
+<paths>
+    <cache-path name="updates" path="updates/" />
+    <cache-path name="scan" path="scan/" />
+    <cache-path name="export" path="export/" />
+</paths>
