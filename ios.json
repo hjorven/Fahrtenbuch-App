@@ -1,0 +1,20 @@
+{
+  "version": "1.0.102",
+  "buildVersion": "102",
+  "bundleIdentifier": "de.hjorven.fahrtenbuch",
+  "minOSVersion": "26.0",
+  "datei": "Fahrtenbuch-102.ipa",
+  "groesse": 1417067,
+  "datum": "2026-11-04T20:43:02Z",
+  "entitlements": [
+    "com.apple.security.application-groups"
+  ],
+  "privacy": {
+    "NSCameraUsageDescription": "Mit der Kamera fotografierst du Tankbelege und den Tacho. Die Zahlen werden direkt auf dem iPhone gelesen.",
+    "NSLocalNetworkUsageDescription": "Das Fahrtenbuch gleicht die Daten mit eurem Server im Heimnetz ab.",
+    "NSLocationAlwaysAndWhenInUseUsageDescription": "Mit \"Immer\" kann eine Fahrt auch über das Widget, das Kontrollzentrum oder einen Kurzbefehl gestartet werden.",
+    "NSLocationWhenInUseUsageDescription": "Das Fahrtenbuch zeichnet während einer Fahrt Strecke und Geschwindigkeit auf.",
+    "NSMotionUsageDescription": "Die Bewegungserkennung merkt, wenn du im Stau stehst, damit die Fahrt dann nicht automatisch endet.",
+    "NSPhotoLibraryUsageDescription": "Ein Foto vom Tankbeleg oder Tacho kann auch aus der Fotomediathek kommen."
+  }
+}
