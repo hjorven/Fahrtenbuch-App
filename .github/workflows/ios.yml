@@ -18,11 +18,11 @@ jobs:
       run:
         working-directory: ios
     steps:
+      - uses: actions/checkout@v4
       # Versionsnummer = Laufnummer + 100: Das öffentliche Repo hat am 04.11.2026 neu bei 1 angefangen,
       # die Apps auf den Handys haben schon 55 bis 78 (Android lehnt kleinere Versionen ab).
       - name: Versionsnummer
         run: echo "NUMMER=$((GITHUB_RUN_NUMBER + 100))" >> "$GITHUB_ENV"
-      - uses: actions/checkout@v4
 
       - uses: maxim-lobanov/setup-xcode@v1
         with:
