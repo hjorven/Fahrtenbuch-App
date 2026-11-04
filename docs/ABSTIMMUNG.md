@@ -942,6 +942,14 @@ Läuft. Protokoll wird nach jeder Phase ergänzt. Die Cloud ändert bis „## Cl
 - **Display-PIN gesetzt** (Punkt 3 erledigt, vier Ziffern, Bridge neu gestartet). Wetter bleibt aus.
 - **Annas Handy repariert** (Android 16, per adb, mit Admin). Das Handy löst `fahrtenbuch.local` nicht auf, und in der Ersatzadresse stand der Port `8099` statt `8090`. Admin hat die Adresse auf `http://<pi-ip>:8090` korrigiert, danach lud die Fahrt von heute hoch (Bus, 34,1 km). Dann die App per `adb install -r` von 1.0.35 auf **1.0.55** aktualisiert (APK aus den Pi-Downloads, SHA-256 geprüft), die Daten sind erhalten und die Einrichtung ist mit allen Rechten durchlaufen. **Für die Cloud:** Ein Tippfehler im Port sollte im Dialog „Server-Adressen“ nicht still durchgehen; vor dem Speichern `/api/health` prüfen und warnen.
 
+### Neustart als öffentliches Repo (04.11., abends)
+- Das Repo ist jetzt **öffentlich** (kostenlose Actions-Minuten). Es startet mit einem bereinigten Stand ohne alte Historie: Netzwerk-Adressen, Namen und Automodelle sind in Code, Tests und Doku neutral („Anna“, „Ben“, „Kombi“, „Bus“, „E-Auto“). Die echten Daten liegen nur in der Datenbank auf dem Pi.
+- Das bisherige Repo mit voller Historie heißt jetzt `Fahrtenbuch-App-privat` (dort liegt noch der Firmware-Entwurf #82).
+- Versionsnummern = Laufnummer + 100 (Android 1.0.101, iOS 1.0.102, Display 102), damit Updates über die alten Versionen gehen. Das Android-APK ist mit dem bisherigen Schlüssel signiert (geprüft) und ließ sich auf dem Testhandy als Update über 1.0.78 installieren, die Daten blieben erhalten.
+- Server-Adressen für `/api/fahrtenbuch/info` stehen nur noch in `server/.env` auf dem Pi (Vorlage `server/.env.beispiel`).
+- Neu: Unbenutzte Startautos werden beim ersten Verbinden nicht hochgeladen, wenn der Server schon Autos hat (Android und iOS, mit Test).
+- Pi läuft auf dem neuen Repo (Backup vorher), Downloads bieten Android 1.0.101 und iOS 1.0.102 an.
+
 ## Cloud ist dran
 
 Übergabe der PC-Session um 08:05. Alles, was ohne Admin ging, ist erledigt (siehe „Stand am Ende“, „Erledigt“). Offen sind nur die Punkte unter „Offen für Admin“, vor allem 1 (Display) und 9 (#90/#93 mergen, die Rechteprüfung der PC-Session hat das Mergen abgelehnt). Die PC-Session beobachtet main und die PRs weiter alle 5 Minuten bis 20:00 und meldet sich bei neuen Punkten im NACHTPLAN oder hier.
