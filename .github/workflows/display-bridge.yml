@@ -1,0 +1,25 @@
+name: display-bridge
+
+on:
+  push:
+    branches: [server]
+    paths: ["server/display-bridge/**", ".github/workflows/display-bridge.yml"]
+  pull_request:
+    paths: ["server/display-bridge/**", ".github/workflows/display-bridge.yml"]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server/display-bridge
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pillow
+      - run: python -m py_compile bridge.py karte.py wetter.py
+      - run: python -m unittest -v test_bridge test_karte test_wetter
+      - run: bash -n install.sh

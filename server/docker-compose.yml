@@ -1,0 +1,30 @@
+services:
+  pocketbase:
+    # Feste Version statt "latest": sonst kann "docker compose pull" ungewollt eine neue
+    # PocketBase-Version mit geaendertem Datenformat einspielen. Auf dem Pi laeuft 0.40.6.
+    image: ghcr.io/muchobien/pocketbase:0.40.6
+    container_name: fahrtenbuch
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    # Adressen für die Apps (GET /api/fahrtenbuch/info, pb_hooks/info.pb.js). Die Apps tragen sie
+    # nach dem Login selbst ein, wenn dort noch keine stehen (z. B. Tailscale für unterwegs).
+    # Die echten Werte stehen nur auf dem Pi in server/.env (nicht im Repo, Vorlage: .env.beispiel).
+    environment:
+      FB_HEIMNETZ: ${FB_HEIMNETZ:-http://fahrtenbuch.local:8090}
+      FB_HEIMNETZ_IP: ${FB_HEIMNETZ_IP:-}
+      FB_TAILSCALE: ${FB_TAILSCALE:-}
+      FB_TAILSCALE_IP: ${FB_TAILSCALE_IP:-}
+      FB_DOWNLOADS: ${FB_DOWNLOADS:-http://fahrtenbuch.local:8091}
+    command:
+      - --migrationsDir=/pb_migrations
+      - --hooksDir=/pb_hooks
+    volumes:
+      - ./pb_data:/pb_data
+      - ./pb_migrations:/pb_migrations
+      - ./pb_hooks:/pb_hooks
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3

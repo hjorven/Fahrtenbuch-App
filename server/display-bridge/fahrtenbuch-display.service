@@ -1,0 +1,20 @@
+[Unit]
+Description=Fahrtenbuch display-bridge (PocketBase -> ESP32-Display)
+After=network-online.target docker.service
+# Bis PocketBase antwortet, schickt die Bridge nur Server-Infos und versucht es alle 30 s weiter.
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=fbdisplay
+Group=fbdisplay
+SupplementaryGroups=dialout
+EnvironmentFile=/etc/fahrtenbuch-display.env
+ExecStart=/usr/bin/python3 /opt/fahrtenbuch-display/bridge.py
+Restart=always
+RestartSec=5
+# Straßen für die Karte (Overpass), legt systemd als /var/cache/fahrtenbuch-display für fbdisplay an
+CacheDirectory=fahrtenbuch-display
+
+[Install]
+WantedBy=multi-user.target

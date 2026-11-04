@@ -1,0 +1,26 @@
+# Server-Daten (enthalten echte Fahrten, nie committen)
+server/pb_data/
+# Echte Adressen des Pi (Vorlage server/.env.beispiel)
+server/.env
+
+# iOS
+ios/*.xcodeproj/
+ios/build/
+*.ipa
+xcuserdata/
+DerivedData/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+*.keystore
+
+# Allgemein
+.DS_Store
+.idea/
+
+# Python
+__pycache__/

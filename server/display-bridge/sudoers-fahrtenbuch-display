@@ -1,0 +1,4 @@
+# Erlaubt der display-bridge genau diese Befehle ohne Passwort (Server-Menü am Display).
+# Bewusst keine Mitgliedschaft in der Gruppe docker, die wäre gleichbedeutend mit root.
+fbdisplay ALL=(root) NOPASSWD: /usr/bin/systemctl reboot, /usr/bin/systemctl poweroff
+fbdisplay ALL=(root) NOPASSWD: /usr/bin/docker restart fahrtenbuch, /usr/bin/docker inspect -f {{.Config.Image}} fahrtenbuch

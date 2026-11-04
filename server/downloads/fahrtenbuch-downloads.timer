@@ -1,0 +1,11 @@
+[Unit]
+Description=Fahrtenbuch: alle 10 Minuten nach neuen App-Builds sehen
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=10min
+RandomizedDelaySec=30s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

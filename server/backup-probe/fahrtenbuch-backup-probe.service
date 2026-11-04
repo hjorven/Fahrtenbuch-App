@@ -1,0 +1,9 @@
+[Unit]
+Description=Fahrtenbuch: Backup-Probe (neuestes PocketBase-Backup öffnen und prüfen)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/fahrtenbuch-backup-probe/probe.py
+# Ergebnis für Bridge und Startseite: /var/lib/fahrtenbuch-backup-probe/ergebnis.json
+StateDirectory=fahrtenbuch-backup-probe
+Nice=10

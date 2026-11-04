@@ -1,0 +1,24 @@
+name: downloads
+
+on:
+  push:
+    branches: [server]
+    paths: ["server/downloads/**", ".github/workflows/downloads.yml"]
+  pull_request:
+    paths: ["server/downloads/**", ".github/workflows/downloads.yml"]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server/downloads
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m py_compile abholen.py
+      - run: python -m unittest -v test_abholen
+      - run: bash -n install.sh

@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<!-- Macht den Server im Heimnetz auffindbar (Roadmap Nr. 3): Die Apps suchen im Login nach
+     _fahrtenbuch._tcp und tragen die Adresse ein. Installation auf dem Pi:
+     sudo cp avahi/fahrtenbuch.service /etc/avahi/services/ (Avahi lädt sie von selbst). -->
+<service-group>
+  <name replace-wildcards="yes">Fahrtenbuch auf %h</name>
+  <service>
+    <type>_fahrtenbuch._tcp</type>
+    <port>8090</port>
+    <txt-record>pfad=/api/health</txt-record>
+    <txt-record>downloads=8091</txt-record>
+  </service>
+</service-group>

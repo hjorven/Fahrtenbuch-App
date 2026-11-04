@@ -1,0 +1,11 @@
+[Unit]
+Description=Fahrtenbuch: neue App-Builds abholen (SideStore-Quelle und Android-Update)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=@BENUTZER@
+EnvironmentFile=-/etc/fahrtenbuch-downloads.env
+ExecStart=/usr/bin/python3 /opt/fahrtenbuch-downloads/abholen.py
+TimeoutStartSec=300

@@ -1,0 +1,2 @@
+pyserial>=3.5
+pillow>=9  # nur für die Karte (karte.py)
